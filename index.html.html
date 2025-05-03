@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dice Roller Wallet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white shadow-md rounded-lg p-8 text-center space-y-6 w-80 relative">
+    <h1 class="text-2xl font-semibold text-gray-800">Roll the Dice</h1>
+
+    <div id="dice" class="text-6xl font-bold text-indigo-600">🎲</div>
+
+    <div class="text-gray-700 text-lg">Value: <span id="value">0.0</span></div>
+
+    <button id="rollBtn" onclick="showAd()" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition">
+      Roll
+    </button>
+
+    <div class="text-gray-700 pt-4 border-t">Wallet: <span id="wallet">0.0</span></div>
+    <div class="text-sm text-gray-500">Rolls left today: <span id="rollsLeft">20</span></div>
+
+    <!-- Ad Popup -->
+    <div id="adPopup" class="absolute inset-0 bg-white bg-opacity-95 flex flex-col items-center justify-center space-y-4 hidden z-10">
+      <button onclick="closeAd(true)" class="absolute top-2 right-2 text-gray-600 text-xl">✕</button>
+      <p class="text-lg font-medium text-gray-800">Ad Demo</p>
+      <p class="text-sm text-gray-500">Closing in <span id="adTimer">5</span> seconds...</p>
+    </div>
+  </div>
+
+  <script>
+    let currentValue = 0.0;
+    let wallet = parseFloat(localStorage.getItem("wallet")) || 0.0;
+    let rollCount = parseInt(localStorage.getItem("rollCount")) || 0;
+    let lastReset = localStorage.getItem("lastReset") || "";
+    const maxRollsPerDay = 20;
+
+    function updateUI() {
+      document.getElementById("wallet").textContent = wallet.toFixed(1);
+      document.getElementById("rollsLeft").textContent = maxRollsPerDay - rollCount;
+    }
+
+    function resetDailyIfNeeded() {
+      const now = new Date();
+      const today = now.toDateString();
+
+      if (lastReset !== today) {
+        rollCount = 0;
+        lastReset = today;
+        localStorage.setItem("rollCount", "0");
+        localStorage.setItem("lastReset", today);
+      }
+    }
+
+    function rollDice() {
+      if (rollCount >= maxRollsPerDay) {
+        alert("Thank you for playing! You've reached your daily limit of 20 rolls. Come back tomorrow!");
+        return;
+      }
+
+      let roll;
+      const rand = Math.floor(Math.random() * 100);
+
+      if (rand < 80) {
+        roll = Math.floor(Math.random() * 3) + 1;
+      } else {
+        roll = Math.floor(Math.random() * 3) + 4;
+      }
+
+      const diceFaces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+      currentValue = roll * 0.1;
+      wallet += currentValue;
+      rollCount++;
+
+      // Update display
+      document.getElementById("dice").textContent = diceFaces[roll - 1];
+      document.getElementById("value").textContent = currentValue.toFixed(1);
+
+      // Save state
+      localStorage.setItem("wallet", wallet.toString());
+      localStorage.setItem("rollCount", rollCount.toString());
+
+      updateUI();
+    }
+
+    // Show ad before rolling
+    function showAd() {
+      resetDailyIfNeeded();
+
+      if (rollCount >= maxRollsPerDay) {
+        alert("You've reached your daily limit of 20 rolls.");
+        return;
+      }
+
+      document.getElementById("adPopup").classList.remove("hidden");
+
+      let countdown = 5;
+      document.getElementById("adTimer").textContent = countdown;
+      const interval = setInterval(() => {
+        countdown--;
+        document.getElementById("adTimer").textContent = countdown;
+        if (countdown === 0) {
+          clearInterval(interval);
+          closeAd();
+        }
+      }, 1000);
+    }
+
+    function closeAd(skipped = false) {
+      document.getElementById("adPopup").classList.add("hidden");
+      if (!skipped) rollDice(); // Only roll if not closed early
+    }
+
+    // Initialize on page load
+    resetDailyIfNeeded();
+    updateUI();
+  </script>
+</body>
+</html>
