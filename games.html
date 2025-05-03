@@ -21,10 +21,11 @@
   </header>
 
   <main class="max-w-6xl mx-auto grid gap-10 lg:grid-cols-2 md:grid-cols-1">
-    
+
     <!-- LIMBO -->
     <div class="glass rounded-xl p-6 shadow-xl">
       <h2 class="text-2xl font-bold mb-4">Limbo</h2>
+      <input type="number" id="limboBet" value="1" class="p-2 rounded text-black mb-4 w-full" placeholder="Enter bet amount"/>
       <div class="flex gap-4 mb-4">
         <button onclick="playLimbo(2)" class="bg-blue-500 px-4 py-2 rounded">2x</button>
         <button onclick="playLimbo(4)" class="bg-green-500 px-4 py-2 rounded">4x</button>
@@ -36,6 +37,7 @@
     <!-- COIN TOSS -->
     <div class="glass rounded-xl p-6 shadow-xl">
       <h2 class="text-2xl font-bold mb-4">Coin Toss</h2>
+      <input type="number" id="coinBet" value="1" class="p-2 rounded text-black mb-4 w-full" placeholder="Enter bet amount"/>
       <button onclick="tossCoin()" class="bg-yellow-500 px-6 py-2 rounded-full text-lg">Toss</button>
       <p id="coinResult" class="mt-4"></p>
     </div>
@@ -43,11 +45,10 @@
     <!-- MINES -->
     <div class="glass rounded-xl p-6 shadow-xl">
       <h2 class="text-2xl font-bold mb-2">Mines (3x3)</h2>
-      <button onclick="startMines()" class="bg-purple-600 px-4 py-2 rounded mb-2">Start Game (₹1)</button>
+      <input type="number" id="mineBet" value="1" class="p-2 rounded text-black mb-2 w-full" placeholder="Enter bet amount"/>
+      <button onclick="startMines()" class="bg-purple-600 px-4 py-2 rounded mb-2">Start Game</button>
       <p class="text-sm mb-2 text-yellow-300">Click to reveal tiles. Cash out before hitting a mine!</p>
-      <div id="minesGrid" class="grid grid-cols-3 gap-2 w-48 mb-4">
-        <!-- Mines will render here -->
-      </div>
+      <div id="minesGrid" class="grid grid-cols-3 gap-2 w-48 mb-4"></div>
       <p>Multiplier: <span id="mineMultiplier" class="text-green-400 font-semibold">0.0x</span></p>
       <button onclick="cashOutMines()" class="mt-2 px-4 py-2 bg-green-500 rounded">Cash Out</button>
       <p id="mineResult" class="mt-2"></p>
@@ -56,7 +57,7 @@
     <!-- CRASH -->
     <div class="glass rounded-xl p-6 shadow-xl">
       <h2 class="text-2xl font-bold mb-2">Crash</h2>
-      <input type="number" id="crashBet" placeholder="Enter bet (min ₹1)" class="p-2 rounded text-black mb-2 w-full">
+      <input type="number" id="crashBet" placeholder="Enter bet amount" class="p-2 rounded text-black mb-2 w-full" value="1">
       <div class="flex gap-4 mb-4">
         <button onclick="startCrash()" id="startCrashBtn" class="bg-blue-500 px-4 py-2 rounded">Start</button>
         <button onclick="cashOutCrash()" id="cashOutCrashBtn" class="bg-green-500 px-4 py-2 rounded" disabled>Cash Out</button>
@@ -68,7 +69,6 @@
   </main>
 
   <script>
-    // WALLET
     let wallet = 10;
     const walletEl = document.getElementById("wallet");
     const updateWallet = (amt) => {
@@ -78,44 +78,48 @@
 
     // LIMBO
     function playLimbo(multiplier) {
-      if (wallet < 1) return alert("Insufficient balance!");
-      updateWallet(-1);
+      const bet = parseFloat(document.getElementById("limboBet").value);
+      if (isNaN(bet) || bet <= 0 || wallet < bet) return alert("Invalid bet");
+      updateWallet(-bet);
       const win = Math.random() < 1 / multiplier;
       const res = document.getElementById("limboResult");
       if (win) {
-        updateWallet(multiplier);
-        res.textContent = `You won ₹${multiplier}!`;
-      } else res.textContent = `You lost ₹1.`;
+        updateWallet(bet * multiplier);
+        res.textContent = `You won ₹${(bet * multiplier).toFixed(2)}!`;
+      } else {
+        res.textContent = `You lost ₹${bet.toFixed(2)}.`;
+      }
     }
 
     // COIN TOSS
     function tossCoin() {
-      if (wallet < 1) return alert("Insufficient balance!");
-      updateWallet(-1);
+      const bet = parseFloat(document.getElementById("coinBet").value);
+      if (isNaN(bet) || bet <= 0 || wallet < bet) return alert("Invalid bet");
+      updateWallet(-bet);
       const win = Math.random() < 0.5;
       const res = document.getElementById("coinResult");
       if (win) {
-        updateWallet(2);
-        res.textContent = "Heads! You won ₹2!";
-      } else res.textContent = "Tails! You lost ₹1.";
+        updateWallet(bet * 2);
+        res.textContent = `Heads! You won ₹${(bet * 2).toFixed(2)}!`;
+      } else {
+        res.textContent = `Tails! You lost ₹${bet.toFixed(2)}.`;
+      }
     }
 
     // MINES
-    let mines = [];
-    let revealed = [];
-    let minesPlaying = false;
+    let mines = [], revealed = [], minesPlaying = false;
     let mineMultiplierIndex = 0;
-    const mineMultipliers = [1.25, 1.50, 1.75, 2.00, 2.25, 2.50, 2.75, 3.00];
+    let mineBetAmount = 1;
+    const mineMultipliers = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
 
     function startMines() {
-      if (wallet < 1) return alert("Not enough balance!");
-      updateWallet(-1);
+      mineBetAmount = parseFloat(document.getElementById("mineBet").value);
+      if (isNaN(mineBetAmount) || mineBetAmount <= 0 || wallet < mineBetAmount) return alert("Invalid bet");
+      updateWallet(-mineBetAmount);
       mines = Array(9).fill(false);
       revealed = Array(9).fill(false);
       mineMultiplierIndex = 0;
       minesPlaying = true;
-
-      // Place 2 mines
       let placed = 0;
       while (placed < 2) {
         const i = Math.floor(Math.random() * 9);
@@ -147,9 +151,9 @@
         document.getElementById("mineResult").textContent = "No winnings to cash out.";
         return;
       }
-      const winAmt = mineMultipliers[mineMultiplierIndex - 1];
+      const winAmt = mineBetAmount * mineMultipliers[mineMultiplierIndex - 1];
       updateWallet(winAmt);
-      document.getElementById("mineResult").textContent = `Cashed out at ${winAmt}x! Won ₹${winAmt}`;
+      document.getElementById("mineResult").textContent = `Cashed out at ${mineMultipliers[mineMultiplierIndex - 1]}x! Won ₹${winAmt.toFixed(2)}`;
       minesPlaying = false;
       renderMines();
     }
@@ -168,15 +172,11 @@
     }
 
     // CRASH
-    let crashInterval;
-    let crashMultiplier = 1.0;
-    let crashRunning = false;
+    let crashInterval, crashMultiplier = 1.0, crashRunning = false;
 
     function startCrash() {
       const bet = parseFloat(document.getElementById("crashBet").value);
-      if (isNaN(bet) || bet < 1) return alert("Enter a valid bet (min ₹1)");
-      if (wallet < bet) return alert("Not enough balance!");
-
+      if (isNaN(bet) || bet < 1 || wallet < bet) return alert("Invalid bet (min ₹1)");
       updateWallet(-bet);
       crashMultiplier = 1.0;
       crashRunning = true;
@@ -190,7 +190,6 @@
         elapsed += 200;
         crashMultiplier += 0.1 + Math.random() * 0.2;
         document.getElementById("crashMultiplier").textContent = crashMultiplier.toFixed(2) + "x";
-
         if (elapsed >= 5000 || crashMultiplier >= 5) {
           endCrash(false, bet);
         }
