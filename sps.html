@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stone Paper Scissors</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #1a202c;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+    }
+
+    .game-btn {
+      transition: transform 0.3s ease;
+    }
+
+    .game-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .btn-shadow {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    }
+
+    .game-icon {
+      font-size: 2.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    .game-icon:hover {
+      transform: scale(1.2);
+    }
+
+    .winner-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #68D391; /* Green for win */
+    }
+
+    .loser-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #F56565; /* Red for lose */
+    }
+
+    /* Shuffling emojis styles */
+    .shuffling-emojis {
+      font-size: 3rem;
+      animation: shuffle 1.5s infinite;
+    }
+
+    @keyframes shuffle {
+      0% { content: "✊"; }
+      33% { content: "✋"; }
+      66% { content: "✌️"; }
+      100% { content: "✊"; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex justify-center items-center text-white p-6">
+
+  <div class="glass p-6 w-full max-w-2xl text-center">
+    <h1 class="text-4xl font-bold mb-4">Rock, Paper, Scissors</h1>
+    
+    <div class="flex justify-between items-center text-lg mb-4">
+      <div>💰 Wallet: ₹<span id="wallet">10</span></div>
+      <input type="number" id="bet" class="rounded-xl p-2 text-black w-24" min="1" placeholder="Bet" />
+    </div>
+
+    <div class="grid grid-cols-3 gap-6 mb-6">
+      <div class="game-btn p-4 rounded-xl border-2 border-white hover:bg-gray-800 cursor-pointer" onclick="playGame('rock')">
+        <div class="game-icon text-4xl">✊</div>
+        <div>Rock</div>
+      </div>
+      <div class="game-btn p-4 rounded-xl border-2 border-white hover:bg-gray-800 cursor-pointer" onclick="playGame('paper')">
+        <div class="game-icon text-4xl">✋</div>
+        <div>Paper</div>
+      </div>
+      <div class="game-btn p-4 rounded-xl border-2 border-white hover:bg-gray-800 cursor-pointer" onclick="playGame('scissors')">
+        <div class="game-icon text-4xl">✌️</div>
+        <div>Scissors</div>
+      </div>
+    </div>
+
+    <div id="result" class="text-2xl mb-4"></div>
+
+    <div id="gameArea" class="hidden">
+      <div id="outcome" class="text-xl mt-4 mb-2">Waiting for Result...</div>
+      <div class="flex justify-center mt-6">
+        <div id="shuffling" class="shuffling-emojis">
+          ✊
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let wallet = 10;
+    let gameStarted = false;
+    let options = ['rock', 'paper', 'scissors'];
+
+    // Update wallet display function
+    function updateWallet() {
+      document.getElementById("wallet").textContent = wallet.toFixed(2);
+    }
+
+    function playGame(playerChoice) {
+      const bet = parseFloat(document.getElementById("bet").value);
+      if (isNaN(bet) || bet <= 0 || bet > wallet) {
+        alert("Enter a valid bet within your wallet balance.");
+        return;
+      }
+
+      // Deduct bet from wallet immediately when the game starts
+      wallet -= bet;
+      updateWallet();
+
+      document.getElementById("gameArea").classList.remove("hidden");
+      document.getElementById("outcome").textContent = "Shuffling...";
+
+      setTimeout(() => {
+        const computerChoice = options[Math.floor(Math.random() * 3)];
+        document.getElementById("outcome").textContent = "Determining result...";
+
+        setTimeout(() => {
+          const result = getResult(playerChoice, computerChoice);
+          showResult(result, computerChoice, bet);
+        }, 1000);
+      }, 1500);
+    }
+
+    function getResult(playerChoice, computerChoice) {
+      if (playerChoice === computerChoice) {
+        return "draw";
+      } else if (
+        (playerChoice === "rock" && computerChoice === "scissors") ||
+        (playerChoice === "paper" && computerChoice === "rock") ||
+        (playerChoice === "scissors" && computerChoice === "paper")
+      ) {
+        return "win";
+      } else {
+        return "lose";
+      }
+    }
+
+    function showResult(result, computerChoice, bet) {
+      const resultText = document.getElementById("result");
+      const gameOutcome = document.getElementById("outcome");
+
+      if (result === "win") {
+        wallet += bet * 2;
+        resultText.textContent = `🎉 You win! Computer chose ${computerChoice.charAt(0).toUpperCase() + computerChoice.slice(1)}. You earned ₹${(bet * 2).toFixed(2)}!`;
+        resultText.classList.add("winner-text");
+        resultText.classList.remove("loser-text");
+      } else if (result === "lose") {
+        resultText.textContent = `💀 You lose! Computer chose ${computerChoice.charAt(0).toUpperCase() + computerChoice.slice(1)}. You lost ₹${bet.toFixed(2)}.`;
+        resultText.classList.add("loser-text");
+        resultText.classList.remove("winner-text");
+      } else {
+        resultText.textContent = `It's a draw! You both chose ${computerChoice.charAt(0).toUpperCase() + computerChoice.slice(1)}.`;
+        resultText.classList.remove("winner-text", "loser-text");
+      }
+
+      gameOutcome.innerHTML = `🤖 Computer chose <span class="font-bold">${computerChoice.charAt(0).toUpperCase() + computerChoice.slice(1)}</span>!`;
+      updateWallet();
+    }
+
+    updateWallet();
+  </script>
+
+</body>
+</html>
