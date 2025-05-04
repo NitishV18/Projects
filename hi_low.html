@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>High-Low Guess</title>
+  <title>High-Low Number Guess</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -16,14 +16,6 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
       border-radius: 1rem;
-    }
-    .shuffling {
-      font-size: 3rem;
-      animation: shuffle 0.1s linear infinite;
-    }
-    @keyframes shuffle {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-5px); }
     }
     .btn {
       background-color: #00ff99;
@@ -42,18 +34,19 @@
 
   <div class="glass p-6 w-full max-w-md space-y-6 text-center">
     <h1 class="text-3xl font-bold mb-2">High-Low Guess Game</h1>
+    <p class="text-sm text-gray-300 mb-2">Enter a number between 200 and 700</p>
 
     <div class="text-lg">💰 Wallet: ₹<span id="wallet">10.00</span></div>
 
     <input id="bet" type="number" placeholder="Bet Amount" class="p-2 rounded text-black w-full" />
-    <input id="chosenNumber" type="number" placeholder="Choose a number (001-999)" class="p-2 rounded text-black w-full" min="1" max="999" />
+    <input id="chosenNumber" type="number" placeholder="Choose a number (200-700)" class="p-2 rounded text-black w-full" min="200" max="700" />
 
     <div class="flex justify-center gap-4">
       <button class="btn" onclick="playGame('high')">HIGH 🔼</button>
       <button class="btn" onclick="playGame('low')">LOW 🔽</button>
     </div>
 
-    <div id="shuffler" class="text-4xl font-mono">🔄🔄🔄</div>
+    <div id="shuffler" class="text-4xl font-mono">🎲🎲🎲</div>
     <div id="result" class="text-lg mt-4 font-semibold"></div>
   </div>
 
@@ -64,12 +57,17 @@
       document.getElementById("wallet").textContent = wallet.toFixed(2);
     }
 
-    function shuffleEmojis(targetNumber, callback) {
+    function numberToEmoji(num) {
+      const emojiMap = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣'];
+      return String(num).padStart(3, '0').split('').map(d => emojiMap[+d]).join('');
+    }
+
+    function shuffleEmojis(callback) {
       const shuffler = document.getElementById("shuffler");
       let count = 0;
       const interval = setInterval(() => {
         let rand = Math.floor(Math.random() * 999) + 1;
-        shuffler.textContent = String(rand).padStart(3, '0');
+        shuffler.textContent = numberToEmoji(rand);
         count++;
         if (count >= 20) {
           clearInterval(interval);
@@ -87,32 +85,32 @@
         alert("Enter a valid bet within your wallet.");
         return;
       }
-      if (isNaN(chosenNumber) || chosenNumber < 1 || chosenNumber > 999) {
-        alert("Enter a number between 001 and 999.");
+      if (isNaN(chosenNumber) || chosenNumber < 200 || chosenNumber > 700) {
+        alert("Choose a number between 200 and 700.");
         return;
       }
 
       resultDisplay.textContent = "Shuffling...";
       resultDisplay.className = "text-lg mt-4 font-semibold text-yellow-400";
 
-      shuffleEmojis(chosenNumber, () => {
+      shuffleEmojis(() => {
         const outcome = Math.floor(Math.random() * 999) + 1;
-        document.getElementById("shuffler").textContent = String(outcome).padStart(3, '0');
+        const outcomeEmoji = numberToEmoji(outcome);
+        document.getElementById("shuffler").textContent = outcomeEmoji;
 
         let resultMsg = "";
         let win = false, draw = false;
 
         if (outcome === chosenNumber) {
           draw = true;
-          wallet += 0; // 1x = just return the bet
-          resultMsg = `🤝 Draw! You get back ₹${bet.toFixed(2)}. Outcome: ${outcome}`;
+          resultMsg = `🤝 Draw! You get back ₹${bet.toFixed(2)}. Outcome: ${outcomeEmoji}`;
         } else if ((choice === "high" && outcome > chosenNumber) || (choice === "low" && outcome < chosenNumber)) {
           win = true;
           wallet += bet;
-          resultMsg = `🎉 You won ₹${(bet * 2).toFixed(2)}! Outcome: ${outcome}`;
+          resultMsg = `🎉 You won ₹${(bet * 2).toFixed(2)}! Outcome: ${outcomeEmoji}`;
         } else {
           wallet -= bet;
-          resultMsg = `💀 You lost ₹${bet.toFixed(2)}! Outcome: ${outcome}`;
+          resultMsg = `💀 You lost ₹${bet.toFixed(2)}! Outcome: ${outcomeEmoji}`;
         }
 
         updateWallet();
