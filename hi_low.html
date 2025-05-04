@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>High-Low Guess</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(to right, #0f0f0f, #1a1a1a);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 1rem;
+    }
+    .shuffling {
+      font-size: 3rem;
+      animation: shuffle 0.1s linear infinite;
+    }
+    @keyframes shuffle {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-5px); }
+    }
+    .btn {
+      background-color: #00ff99;
+      color: black;
+      padding: 12px 24px;
+      font-weight: bold;
+      border-radius: 12px;
+      transition: background 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #00cc7f;
+    }
+  </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-4">
+
+  <div class="glass p-6 w-full max-w-md space-y-6 text-center">
+    <h1 class="text-3xl font-bold mb-2">High-Low Guess Game</h1>
+
+    <div class="text-lg">💰 Wallet: ₹<span id="wallet">10.00</span></div>
+
+    <input id="bet" type="number" placeholder="Bet Amount" class="p-2 rounded text-black w-full" />
+    <input id="chosenNumber" type="number" placeholder="Choose a number (001-999)" class="p-2 rounded text-black w-full" min="1" max="999" />
+
+    <div class="flex justify-center gap-4">
+      <button class="btn" onclick="playGame('high')">HIGH 🔼</button>
+      <button class="btn" onclick="playGame('low')">LOW 🔽</button>
+    </div>
+
+    <div id="shuffler" class="text-4xl font-mono">🔄🔄🔄</div>
+    <div id="result" class="text-lg mt-4 font-semibold"></div>
+  </div>
+
+  <script>
+    let wallet = 10;
+
+    function updateWallet() {
+      document.getElementById("wallet").textContent = wallet.toFixed(2);
+    }
+
+    function shuffleEmojis(targetNumber, callback) {
+      const shuffler = document.getElementById("shuffler");
+      let count = 0;
+      const interval = setInterval(() => {
+        let rand = Math.floor(Math.random() * 999) + 1;
+        shuffler.textContent = String(rand).padStart(3, '0');
+        count++;
+        if (count >= 20) {
+          clearInterval(interval);
+          callback();
+        }
+      }, 70);
+    }
+
+    function playGame(choice) {
+      const bet = parseFloat(document.getElementById("bet").value);
+      const chosenNumber = parseInt(document.getElementById("chosenNumber").value);
+      const resultDisplay = document.getElementById("result");
+
+      if (isNaN(bet) || bet <= 0 || bet > wallet) {
+        alert("Enter a valid bet within your wallet.");
+        return;
+      }
+      if (isNaN(chosenNumber) || chosenNumber < 1 || chosenNumber > 999) {
+        alert("Enter a number between 001 and 999.");
+        return;
+      }
+
+      resultDisplay.textContent = "Shuffling...";
+      resultDisplay.className = "text-lg mt-4 font-semibold text-yellow-400";
+
+      shuffleEmojis(chosenNumber, () => {
+        const outcome = Math.floor(Math.random() * 999) + 1;
+        document.getElementById("shuffler").textContent = String(outcome).padStart(3, '0');
+
+        let resultMsg = "";
+        let win = false, draw = false;
+
+        if (outcome === chosenNumber) {
+          draw = true;
+          wallet += 0; // 1x = just return the bet
+          resultMsg = `🤝 Draw! You get back ₹${bet.toFixed(2)}. Outcome: ${outcome}`;
+        } else if ((choice === "high" && outcome > chosenNumber) || (choice === "low" && outcome < chosenNumber)) {
+          win = true;
+          wallet += bet;
+          resultMsg = `🎉 You won ₹${(bet * 2).toFixed(2)}! Outcome: ${outcome}`;
+        } else {
+          wallet -= bet;
+          resultMsg = `💀 You lost ₹${bet.toFixed(2)}! Outcome: ${outcome}`;
+        }
+
+        updateWallet();
+        resultDisplay.textContent = resultMsg;
+        resultDisplay.className = "text-lg mt-4 font-semibold " + (win ? "text-green-400" : draw ? "text-blue-400" : "text-red-400");
+      });
+    }
+
+    updateWallet();
+  </script>
+
+</body>
+</html>
