@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Brawl Pirates - 5 Bowls</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+    }
+    .bowl {
+      transition: transform 0.3s ease-in-out;
+      cursor: pointer;
+    }
+    .marble {
+      transition: opacity 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-white">
+
+  <div class="glass p-6 w-full max-w-md text-center space-y-6">
+    <h1 class="text-3xl font-bold mb-2">🏴‍☠️ Brawl Pirates</h1>
+    
+    <div>💰 Wallet: ₹<span id="wallet">10</span></div>
+
+    <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+      <input type="number" id="bet" placeholder="Enter bet" class="rounded-xl p-2 text-black w-full sm:w-32" min="1">
+      <button onclick="startGame()" class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-xl w-full sm:w-auto">Start Game</button>
+    </div>
+
+    <div id="gameArea" class="space-y-4 hidden">
+      <div class="grid grid-cols-5 gap-2 justify-center mt-4" id="bowls">
+        <!-- 5 bowls -->
+        <div class="text-center">
+          <div class="bowl text-4xl sm:text-5xl" onclick="guess(0)">🥥</div>
+          <div class="marble text-2xl h-6" id="marble0">⚪</div>
+        </div>
+        <div class="text-center">
+          <div class="bowl text-4xl sm:text-5xl" onclick="guess(1)">🥥</div>
+          <div class="marble text-2xl h-6" id="marble1">⚪</div>
+        </div>
+        <div class="text-center">
+          <div class="bowl text-4xl sm:text-5xl" onclick="guess(2)">🥥</div>
+          <div class="marble text-2xl h-6" id="marble2">⚪</div>
+        </div>
+        <div class="text-center">
+          <div class="bowl text-4xl sm:text-5xl" onclick="guess(3)">🥥</div>
+          <div class="marble text-2xl h-6" id="marble3">⚪</div>
+        </div>
+        <div class="text-center">
+          <div class="bowl text-4xl sm:text-5xl" onclick="guess(4)">🥥</div>
+          <div class="marble text-2xl h-6" id="marble4">⚪</div>
+        </div>
+      </div>
+      <div id="result" class="text-lg mt-4 font-semibold"></div>
+    </div>
+  </div>
+
+  <script>
+    let wallet = 10;
+    let marblePosition = -1;
+    let gameStarted = false;
+    const totalBowls = 5;
+
+    function updateWallet() {
+      document.getElementById("wallet").textContent = wallet.toFixed(2);
+    }
+
+    function showMarble(pos) {
+      for (let i = 0; i < totalBowls; i++) {
+        document.getElementById(`marble${i}`).style.opacity = i === pos ? "1" : "0";
+      }
+    }
+
+    function hideAllMarbles() {
+      for (let i = 0; i < totalBowls; i++) {
+        document.getElementById(`marble${i}`).style.opacity = "0";
+      }
+    }
+
+    function shuffleMarble() {
+      // Perform 7 random swaps
+      for (let i = 0; i < 7; i++) {
+        const newPos = Math.floor(Math.random() * totalBowls);
+        if (newPos !== marblePosition) {
+          marblePosition = newPos;
+        }
+      }
+    }
+
+    function startGame() {
+      const bet = parseFloat(document.getElementById("bet").value);
+      if (isNaN(bet) || bet <= 0 || bet > wallet) {
+        alert("Enter a valid bet within your wallet balance.");
+        return;
+      }
+
+      document.getElementById("result").textContent = "";
+      document.getElementById("result").classList.remove("text-red-400", "text-green-400");
+      marblePosition = Math.floor(Math.random() * totalBowls);
+      gameStarted = false;
+
+      document.getElementById("gameArea").classList.remove("hidden");
+
+      showMarble(marblePosition);
+      document.getElementById("result").textContent = "👀 Placing marble...";
+
+      setTimeout(() => {
+        hideAllMarbles();
+        document.getElementById("result").textContent = "🔀 Shuffling bowls...";
+        animateBowls();
+
+        setTimeout(() => {
+          shuffleMarble();
+        }, 500);
+
+        setTimeout(() => {
+          gameStarted = true;
+          document.getElementById("result").textContent = "🤔 Guess where the marble is!";
+        }, 1500);
+      }, 1500);
+    }
+
+    function animateBowls() {
+      const bowls = document.querySelectorAll(".bowl");
+      for (let i = 0; i < totalBowls; i++) {
+        setTimeout(() => {
+          bowls[i].style.transform = "translateY(-10px)";
+          setTimeout(() => {
+            bowls[i].style.transform = "translateY(0)";
+          }, 300);
+        }, i * 150);
+      }
+    }
+
+    function guess(index) {
+      if (!gameStarted) return;
+
+      const bet = parseFloat(document.getElementById("bet").value);
+      const result = document.getElementById("result");
+      gameStarted = false;
+
+      showMarble(marblePosition);
+
+      if (index === marblePosition) {
+        wallet += bet * 4; // 5 bowls: payout should be 4x for correct guess
+        result.textContent = `🎉 Correct! Marble was under bowl ${marblePosition + 1}. You won ₹${(bet * 4).toFixed(2)}!`;
+        result.classList.add("text-green-400");
+      } else {
+        wallet -= bet;
+        result.textContent = `💀 Wrong! Marble was under bowl ${marblePosition + 1}. You lost ₹${bet.toFixed(2)}.`;
+        result.classList.add("text-red-400");
+      }
+
+      updateWallet();
+    }
+
+    updateWallet();
+    hideAllMarbles();
+  </script>
+
+</body>
+</html>
