@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎮 Game Landing Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .game-tile {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .game-tile:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-900 via-purple-800 to-pink-700 min-h-screen flex items-center justify-center">
+
+  <div class="text-center text-white p-6 max-w-4xl mx-auto">
+    <h1 class="text-4xl font-extrabold mb-12">🎮 Welcome to the Game Hub!</h1>
+    
+    <div class="grid grid-cols-2 gap-8 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
+      
+      <!-- Brawl Pirate Game -->
+      <a href="/brawl_pirate.html" class="game-tile group relative block p-6 bg-blue-600 rounded-xl shadow-lg">
+        <div class="absolute inset-0 bg-blue-800 opacity-50 group-hover:opacity-75 rounded-xl"></div>
+        <div class="relative z-10 flex items-center justify-center h-full">
+          <span class="text-5xl">🏴‍☠️</span>
+          <h2 class="mt-4 text-xl font-semibold">Brawl Pirate</h2>
+        </div>
+      </a>
+      
+      <!-- Stone Paper Scissors Game -->
+      <a href="sps.html" class="game-tile group relative block p-6 bg-green-600 rounded-xl shadow-lg">
+        <div class="absolute inset-0 bg-green-800 opacity-50 group-hover:opacity-75 rounded-xl"></div>
+        <div class="relative z-10 flex items-center justify-center h-full">
+          <span class="text-5xl">🧑‍🤝‍🧑✂️🪙</span>
+          <h2 class="mt-4 text-xl font-semibold">Stone Paper Scissors</h2>
+        </div>
+      </a>
+      
+      <!-- Hi-Low Game -->
+      <a href="hi_low.html" class="game-tile group relative block p-6 bg-yellow-600 rounded-xl shadow-lg">
+        <div class="absolute inset-0 bg-yellow-800 opacity-50 group-hover:opacity-75 rounded-xl"></div>
+        <div class="relative z-10 flex items-center justify-center h-full">
+          <span class="text-5xl">🔼🔽</span>
+          <h2 class="mt-4 text-xl font-semibold">Hi-Low</h2>
+        </div>
+      </a>
+
+      <!-- Chicken Game -->
+      <a href="chicken.html" class="game-tile group relative block p-6 bg-red-600 rounded-xl shadow-lg">
+        <div class="absolute inset-0 bg-red-800 opacity-50 group-hover:opacity-75 rounded-xl"></div>
+        <div class="relative z-10 flex items-center justify-center h-full">
+          <span class="text-5xl">🐔</span>
+          <h2 class="mt-4 text-xl font-semibold">Chicken Game</h2>
+        </div>
+      </a>
+      
+    </div>
+
+  </div>
+
+</body>
+</html>
